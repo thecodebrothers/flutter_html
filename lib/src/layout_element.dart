@@ -39,16 +39,11 @@ class TableLayoutElement extends LayoutElement {
         columnSizes = child.children.where((c) => c.name == "col").map((c) {
           final colWidth = c.attributes["width"];
           if (colWidth != null && colWidth.endsWith("%")) {
-            final percentageSize =
-                double.tryParse(colWidth.substring(0, colWidth.length - 1));
-            return percentageSize != null
-                ? FlexibleTrackSize(percentageSize * 0.01)
-                : FlexibleTrackSize(1);
+            final percentageSize = double.tryParse(colWidth.substring(0, colWidth.length - 1));
+            return percentageSize != null ? FlexibleTrackSize(percentageSize * 0.01) : FlexibleTrackSize(1);
           } else if (colWidth != null) {
             final fixedPxSize = double.tryParse(colWidth);
-            return fixedPxSize != null
-                ? FixedTrackSize(fixedPxSize)
-                : FlexibleTrackSize(1);
+            return fixedPxSize != null ? FixedTrackSize(fixedPxSize) : FlexibleTrackSize(1);
           } else {
             return FlexibleTrackSize(1);
           }
@@ -61,14 +56,11 @@ class TableLayoutElement extends LayoutElement {
     }
 
     // All table rows have a height intrinsic to their (spanned) contents
-    final rowSizes =
-        List.generate(rows.length, (_) => IntrinsicContentTrackSize());
+    final rowSizes = List.generate(rows.length, (_) => IntrinsicContentTrackSize());
 
     // Calculate column bounds
     int columnMax = rows
-        .map((row) => row.children
-            .whereType<TableCellElement>()
-            .fold(0, (int value, child) => value + child.colspan))
+        .map((row) => row.children.whereType<TableCellElement>().fold(0, (int value, child) => value + child.colspan))
         .fold(0, max);
 
     final cells = <GridPlacement>[];
@@ -92,8 +84,7 @@ class TableLayoutElement extends LayoutElement {
               ),
               child: SizedBox.expand(
                 child: Container(
-                  alignment: child.style.alignment ?? style.alignment ??
-                      Alignment.centerLeft,
+                  alignment: child.style.alignment ?? style.alignment ?? Alignment.centerLeft,
                   child: StyledText(
                     textSpan: context.parser.parseTree(context, child),
                     style: child.style,
@@ -113,8 +104,9 @@ class TableLayoutElement extends LayoutElement {
       rowi++;
     }
 
-    final finalColumnSizes =
-        columnSizes ?? List.generate(columnMax, (_) => FlexibleTrackSize(1));
+    final finalColumnSizes = columnSizes == null || columnSizes.isEmpty
+        ? List.generate(1, (_) => FlexibleTrackSize(1))
+        : List.generate(columnMax, (_) => FlexibleTrackSize(1));
     return Container(
       decoration: BoxDecoration(
         color: style.backgroundColor,
@@ -125,13 +117,13 @@ class TableLayoutElement extends LayoutElement {
       child: LayoutGrid(
         gridFit: GridFit.loose,
         templateColumnSizes: finalColumnSizes,
-        templateRowSizes: rowSizes,
+        templateRowSizes:
+            rowSizes == null || rowSizes.isEmpty ? List.generate(1, (_) => IntrinsicContentTrackSize()) : rowSizes,
         children: cells,
       ),
     );
   }
 }
-
 
 class TableSectionLayoutElement extends LayoutElement {
   TableSectionLayoutElement({
@@ -172,12 +164,12 @@ class TableCellElement extends StyledElement {
     Style style,
     dom.Element node,
   }) : super(
-      name: name,
-      elementId: elementId,
-      elementClasses: elementClasses,
-      children: children,
-      style: style,
-      node: node) {
+            name: name,
+            elementId: elementId,
+            elementClasses: elementClasses,
+            children: children,
+            style: style,
+            node: node) {
     colspan = _parseSpan(this, "colspan");
     rowspan = _parseSpan(this, "rowspan");
   }
@@ -188,8 +180,9 @@ class TableCellElement extends StyledElement {
   }
 }
 
-TableCellElement parseTableCellElement(dom.Element element,
-    List<StyledElement> children,
+TableCellElement parseTableCellElement(
+  dom.Element element,
+  List<StyledElement> children,
 ) {
   final cell = TableCellElement(
     name: element.localName,
@@ -215,8 +208,9 @@ class TableStyleElement extends StyledElement {
   }) : super(name: name, children: children, style: style, node: node);
 }
 
-TableStyleElement parseTableDefinitionElement(dom.Element element,
-    List<StyledElement> children,
+TableStyleElement parseTableDefinitionElement(
+  dom.Element element,
+  List<StyledElement> children,
 ) {
   switch (element.localName) {
     case "colgroup":
@@ -231,8 +225,9 @@ TableStyleElement parseTableDefinitionElement(dom.Element element,
   }
 }
 
-LayoutElement parseLayoutElement(dom.Element element,
-    List<StyledElement> children,
+LayoutElement parseLayoutElement(
+  dom.Element element,
+  List<StyledElement> children,
 ) {
   switch (element.localName) {
     case "table":
