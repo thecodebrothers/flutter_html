@@ -126,7 +126,7 @@ class TableLayoutElement extends LayoutElement {
     List<TrackSize> finalColumnSizes = (columnSizes ?? <TrackSize>[]).take(
         columnMax).toList();
     finalColumnSizes += List.generate(
-        max(0, columnMax - finalColumnSizes.length),
+        max(1, columnMax - finalColumnSizes.length),
             (_) => FlexibleTrackSize(1));
     return Container(
       decoration: BoxDecoration(
@@ -138,7 +138,7 @@ class TableLayoutElement extends LayoutElement {
       child: LayoutGrid(
         gridFit: GridFit.loose,
         templateColumnSizes: finalColumnSizes,
-        templateRowSizes: rowSizes,
+        templateRowSizes: rowSizes == null || rowSizes.isEmpty ?  List.generate(1, (_) => IntrinsicContentTrackSize()) : rowSizes,
         children: cells,
       ),
     );
